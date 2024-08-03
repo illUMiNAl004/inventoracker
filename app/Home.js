@@ -4,6 +4,9 @@ import { firestore, auth } from '../firebase';
 import { Modal, Box, Typography, Stack, TextField, Button } from '@mui/material';
 import { collection, query, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import GoogleIcon from '@mui/icons-material/Google';
+
 
 export default function Home() {
   const [inventory, setInventory] = useState([]);
@@ -12,6 +15,19 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      // The signed-in user info.
+      const user = result.user;
+      console.log('User signed in:', user);
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+      alert(`Error: ${error.message}`); // Display error message to user
+    }
+  };
+  
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -104,7 +120,6 @@ export default function Home() {
     <Box width="100vw" height="100vh" display="flex" flexDirection="column" alignItems="center" justifyContent="center" bgcolor="teal">
       {user ? (
         <>
-
           <Modal open={open} onClose={handleClose}>
             <Box
               position="absolute"
@@ -112,7 +127,7 @@ export default function Home() {
               left="50%"
               width={400}
               bgcolor="white"
-              border="5px solid #000000"
+              border="0px solid #000000"
               borderRadius={2}
               boxShadow={24}
               p={4}
@@ -157,70 +172,127 @@ export default function Home() {
           </Modal>
           
           <Box border="0px solid #333" mt={2} borderRadius={2}>
-            <Box width="800px" height="100px" bgcolor="#ADD8E6" display="flex" alignItems="center" justifyContent="center" borderRadius={2} sx={{ fontFamily: "Montserrat, sans-serif", fontWeight: 'bold' }}>
-              <Typography variant="h2" color='#333' sx={{ fontFamily: "Montserrat, sans-serif", fontWeight: '300', marginBottom: '10px' }}>INVENTORY ITEMS</Typography>
-            </Box>
-            <Box mt={2}></Box> 
-            <Stack 
-              width='800px' 
-              height='500px' 
-              spacing={1} 
-              overflow="auto" 
-              bgcolor="transparent" 
+  <Box width="800px" bgcolor="#fff" display="flex" flexDirection="column" borderRadius={2}>
+    {/* Sticky Headers */}
+    <Box
+      width="100%"
+      bgcolor="#fff"
+      display="flex"
+      justifyContent="space-between"
+      padding={2}
+      borderBottom="1px solid #ddd"
+      sx={{ position: 'sticky', top: 0, backgroundColor: '#fff', zIndex: 1 }}
+    >
+      <Typography variant="h6" color='#333' sx={{ fontFamily: "Montserrat, sans-serif", fontWeight: '300' }}>NAME</Typography>
+      <Typography variant="h6" color='#333' sx={{ fontFamily: "Montserrat, sans-serif", fontWeight: '300' }}>AMOUNT</Typography>
+    </Box>
 
-            >
-              {inventory.map(({ name, quantity }) => (
-                <Box
-                key={name}
-                width="100%"
-                minHeight="150px"
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-                bgcolor="#ff9f34"
-                padding={2}
-                border="2px solid #333"
-                borderRadius={2}
-                sx={{
-                  position: 'relative',
-                  overflow: 'hidden',
-                  transition: 'all 0.3s ease-in-out',
-                  background: 'linear-gradient(45deg, #ffffff 0%, #ffffff 100%)',
+    <Stack 
+      width='100%' 
+      height='500px' 
+      spacing={1} 
+      overflow="auto" 
+      bgcolor="white" 
+      borderRadius={2}
+      border="0px solid #333"
+    >
+      {inventory.map(({ name, quantity }) => (
+        <Box
+          key={name}
+          width="100%"
+          minHeight="150px"
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          bgcolor="#fff"
+          padding={4}
+          border="0px solid #333"
+          borderRadius={2}
+          sx={{
+            position: 'relative',
+            overflow: 'hidden',
+            transition: 'all 0.1s ease-in-out',
+            '&:hover': {
+              boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: 0,
+              height: 0,
+              background: 'rgba(0, 255, 255, 0.2)',
+              borderRadius: '150%',
+              transform: 'translate(-50%, -50%)',
+              transition: 'width 0.1s ease-out, height 0.1s ease-out',
+              pointerEvents: 'none',
+              zIndex: 0,
+            },
+            '&:hover::after': {
+              width: '300%',
+              height: '300%',
+            }
+          }}
+        >
+          <Typography variant='h4' color='#000' fontFamily="Avenir, sans-serif" sx={{ textTransform: 'uppercase', position: 'relative', zIndex: 1 }}>
+            {name.charAt(0).toUpperCase() + name.slice(1)}
+          </Typography>
+          <Box display="flex" alignItems="center" gap={4}>
+            <Typography variant='h4' color='#000' fontFamily="Avenir, sans-serif" sx={{ textTransform: 'uppercase', position: 'relative', zIndex: 1 }}>
+              {quantity}
+            </Typography>
+            <Stack direction="column" spacing={1} sx={{ position: 'relative', zIndex: 1 }}>
+              <Button 
+                variant="contained" 
+                onClick={() => addItem(name)} 
+                sx={{ 
+                  fontFamily: "Avenir, sans-serif", 
+                  backgroundColor: "black",
+                  color: "white",
+                  width: '40px',
+                  height: '40px',
+                  minWidth: '40px',
+                  borderRadius: '50%',
+                  padding: 0,
+                  fontSize: '24px',
+                  fontWeight: 'bold',
                   '&:hover': {
-                    boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
-                    '&::before': {
-                      transform: 'scaleX(1)',
-                    }
-                  },
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(90deg, #ffffff 0%, #000000 100%)',
-                    transition: 'transform 0.3s ease-in-out',
-                    transform: 'scaleX(0)',
-                    transformOrigin: 'left',
-                    zIndex: 0,
+                    backgroundColor: "#333"
                   }
                 }}
               >
-                <Typography variant='h3' color='#333' fontFamily="Avenir, sans-serif">
-                  {name.charAt(0).toUpperCase() + name.slice(1)}
-                </Typography>
-                <Typography variant='h3' color='#333' fontFamily="Avenir, sans-serif">
-                  {quantity}
-                </Typography>
-                <Stack direction="row" spacing={2}>
-                  <Button variant="contained" onClick={() => addItem(name)}>Add</Button>
-                  <Button variant="contained" onClick={() => removeItem(name)}>Remove</Button>
-                </Stack>
-              </Box>
-              ))}
+                +
+              </Button>
+              <Button 
+                variant="contained" 
+                onClick={() => removeItem(name)} 
+                sx={{ 
+                  fontFamily: "Avenir, sans-serif", 
+                  backgroundColor: "black",
+                  color: "white",
+                  width: '40px',
+                  height: '40px',
+                  minWidth: '40px',
+                  borderRadius: '50%',
+                  padding: 0,
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    backgroundColor: "#333"
+                  }
+                }}
+              >
+                -
+              </Button>
             </Stack>
           </Box>
+        </Box>
+      ))}
+    </Stack>
+  </Box>
+</Box>
+
           <Box 
             display="flex" 
             justifyContent="center" 
@@ -230,14 +302,32 @@ export default function Home() {
             <Button 
               variant="contained" 
               onClick={handleSignOut} 
-              sx={{ fontFamily: "Avenir, sans-serif", marginRight: '275px' }}
+              marginRight="275px"
+              sx={{ 
+                fontFamily: "Avenir, sans-serif", 
+                backgroundColor: "black",
+                color: "white",
+                '&:hover': {
+                  backgroundColor: "#fff",
+                  color: "black"
+                }
+              }}
             >
               Sign Out
             </Button>
             <Button 
               variant="contained" 
               onClick={handleOpen} 
-              sx={{ fontFamily: "Avenir, sans-serif", marginLeft: '275px' }}
+              marginLeft="275px"
+              sx={{ 
+                fontFamily: "Avenir, sans-serif", 
+                backgroundColor: "black",
+                color: "white",
+                '&:hover': {
+                  backgroundColor: "#fff",
+                  color: "black"
+                }
+              }}
             >
               Add New Item
             </Button>
@@ -327,7 +417,37 @@ export default function Home() {
               >
                 Sign Up
               </Button>
+              
             </Box>
+            <Button
+            variant="contained"
+              onClick={handleGoogleSignIn}
+              startIcon={<GoogleIcon />}
+              sx={{
+                width: '300px',
+                fontFamily: 'Montserrat, sans-serif',
+                marginTop: '10px',
+                backgroundColor: 'black',
+                color: '#fff',
+                textTransform: 'none',
+                boxShadow: '0 2px 4px 0 rgba(0,0,0,.25)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#fff',
+                  color: 'black',
+                  boxShadow: '0 0 3px 3px rgba(66,133,244,.3)',
+                },
+                '& .MuiSvgIcon-root': {
+                  background: 'conic-gradient(from -45deg, #ea4335 110deg, #4285f4 90deg 180deg, #34a853 180deg 270deg, #fbbc05 270deg) 73% 55%/150% 150% no-repeat',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  textFillColor: 'transparent',
+                },
+              }}
+            >
+              Continue with Google
+            </Button>
           </Box>
         </Box>
       )}
