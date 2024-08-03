@@ -6,6 +6,7 @@ import { collection, query, getDocs, doc, getDoc, updateDoc, setDoc, deleteDoc }
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import GoogleIcon from '@mui/icons-material/Google';
+import bgImage from './bgimage.jpg';
 
 
 export default function Home() {
@@ -117,7 +118,12 @@ export default function Home() {
   const handleClose = () => setOpen(false);
 
   return (
-    <Box width="100vw" height="100vh" display="flex" flexDirection="column" alignItems="center" justifyContent="center" bgcolor="teal">
+    <Box width="100vw" height="100vh" display="flex" flexDirection="column" alignItems="center" justifyContent="center" sx={{
+      backgroundImage: `url(${bgImage.src})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }}>
       {user ? (
         <>
           <Modal open={open} onClose={handleClose}>
